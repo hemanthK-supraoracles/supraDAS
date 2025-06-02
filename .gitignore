@@ -1,0 +1,6 @@
+build/
+smr_public_key.json
+smr_secret_key.pem
+resup.txt
+supra_history
+supra_node_logs/supra.log

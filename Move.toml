@@ -1,0 +1,15 @@
+[package]
+name = "supraDAS"
+version = "1.0.0"
+authors = []
+
+[addresses]
+CAFE = "0x2bb9552aa01f552baf0c56f3fdf653e5eb54cb6d03c5c2af55ba73d0729c5d5c"
+
+[dev-addresses]
+
+[dependencies.AptosTokenObjects]
+git = "https://github.com/Entropy-Foundation/aptos-core.git"
+rev = "dev"
+subdir = "aptos-move/framework/aptos-token-objects"
+[dev-dependencies]
