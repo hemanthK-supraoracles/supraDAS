@@ -141,6 +141,61 @@ module CAFE::danft_example {
         );
     }
 
+    public entry fun mint_named_nft(
+        creator: &signer,
+        receiver: address,
+        name: String,
+        description: String,
+        uri: String
+    ) acquires CollectionMetadata, MintTracker {
+        let creator_addr = signer::address_of(creator);
+        let tracker = borrow_global_mut<MintTracker>(creator_addr);
+
+        // Check if receiver has already minted
+        assert!(
+            !vector::contains(&tracker.minted_addresses, &receiver),
+            error::already_exists(E_ALREADY_MINTED)
+        );
+
+        // Mint the NFT
+        let token_constructor_ref =
+            token::create_named_token(
+            creator,
+            string::utf8(b"My NFT Collection"),
+            name,
+            description,
+            option::none(),
+            uri,
+        );
+
+        let token_signer = &object::generate_signer(&token_constructor_ref);
+        let burn_ref = token::generate_burn_ref(&token_constructor_ref);
+
+        // Store the burn ref somewhere safe
+        move_to(token_signer, CustomData { burn_ref });
+
+        // Transfer to receiver
+        let token_obj =
+            object::object_from_constructor_ref<token::Token>(&token_constructor_ref);
+        object::transfer(creator, token_obj, receiver);
+
+        // Update mint tracker
+        vector::push_back(&mut tracker.minted_addresses, receiver);
+
+        // Emit mint event
+        let collection_addr =
+            collection::create_collection_address(
+                &creator_addr, &string::utf8(b"My NFT Collection")
+            );
+        // let collection_signer = object::generate_signer_for_object(&collection_addr);
+        let metadata = borrow_global_mut<CollectionMetadata>(collection_addr);
+        event::emit_event(
+            &mut metadata.mint_event_handle,
+            MintEvent { token_name: name, receiver, timestamp: timestamp::now_seconds() }
+        );
+    }
+
+
     // Transfer an NFT
     public entry fun transfer_nft(
         sender: &signer, token_addr: address, receiver: address
